@@ -272,3 +272,40 @@ else:
 
 st.divider()
 st.caption("MediNova AI 3.0 • Developed by Mokshith Reddy • Educational prototype")
+
+
+import streamlit as st
+from supabase import create_client
+
+# Connect to Supabase
+@st.cache_resource
+def connect_supabase():
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
+
+try:
+    supabase = connect_supabase()
+    st.success("MediNova database connection initialized!")
+except Exception as e:
+    st.error("Database connection failed.")
+    st.error(str(e))
+    st.stop()
+
+# Display published medicines
+st.title("MediNova AI 3.2")
+
+if st.button("Load Medicines"):
+    result = (
+        supabase.table("medicines")
+        .select("*")
+        .eq("is_published", True)
+        .execute()
+    )
+
+    for medicine in result.data:
+        st.subheader(medicine["generic_name"])
+        st.write("Brand:", medicine.get("brand_name"))
+        st.write("Strength:", medicine.get("strength"))
+        st.write("Dosage form:", medicine.get("dosage_form"))
+        
